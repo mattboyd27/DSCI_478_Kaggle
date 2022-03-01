@@ -116,4 +116,4 @@ final = data.frame(ImageId = 1:28000, Label = final_knn)
 
 
 
-write.csv(final, "submission.csv")
+write.csv(final, "submission_knn.csv")
