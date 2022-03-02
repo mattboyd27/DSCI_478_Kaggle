@@ -1,0 +1,66 @@
+---
+title: "SVM Digit Recognizer"
+author: "Ian Thorpe"
+date: "2/28/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(e1071)
+library(class)
+library(caret)
+library(readr)
+```
+
+
+```{r}
+image_data <- read.csv('train.csv')
+test_data <- read.csv('test.csv')
+```
+
+```{r, warning = FALSE}
+n <- nrow(image_data)
+ntrain = round(n*0.9)
+set.seed(478)
+tindex = sample(n, ntrain)
+train_data = image_data[tindex,]
+labels = as.factor(image_data[tindex, 1])
+train_pca <- train_data[,-1]
+pca_train <- prcomp(train_pca, scale = FALSE, center = TRUE)
+rotate <- pca_train$rotation[,1:50]
+train_final <- as.matrix(scale(train_pca, center = TRUE, scale = FALSE)) %*% rotate
+
+svm_digit <- svm(train_final,
+                 labels,
+                 method = 'C-classification',
+                 kernel = 'radial')
+prediction <- predict(svm_digit, train_final)
+confusionMatrix(prediction, labels)
+```
+
+```{r}
+
+
+
+test_pca <- test_data
+pca_test <- prcomp(test_pca, scale = FALSE, center = TRUE)
+rotate <- pca_test$rotation[,1:50]
+test_final <- as.matrix(scale(test_pca, center = TRUE, scale = FALSE)) %*% rotate
+test_pred = predict(svm_digit, test_final)
+
+submission_svm = cbind(ImageId = 1:28000, 
+                       Label = as.numeric(as.character(test_pred)))
+write.csv(submission_svm, "submission_svm.csv")
+```
+
+
+
+
+
+
+
+
